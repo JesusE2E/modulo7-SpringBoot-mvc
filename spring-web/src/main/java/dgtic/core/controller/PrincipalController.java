@@ -3,6 +3,7 @@ package dgtic.core.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -22,4 +23,14 @@ public class PrincipalController {
         model.addAttribute("contenido", "@Getmapping en metodo");
         return "spring/getmapping";
     }
+
+    //{/spring/parametros-uno/49
+
+    @GetMapping("parametros-uno/{edad}")
+    public String getParametroUno(@PathVariable("edad") int edad, Model model){
+    String cadena ="Tu edad es: "+edad;
+    model.addAttribute("contenido",cadena);
+    return edad==1?"redirect:/spring/getmapping":"spring/pathVariable";
+    }
+
 }
