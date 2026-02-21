@@ -25,11 +25,18 @@ public class InicioController {
     }
     //pasar informacion a la vista con la clase model
     @RequestMapping(value = "propiedad",method = RequestMethod.GET)
-    private String propiad(Model model){
+    public String propiad(Model model){
         model.addAttribute("propiedad",valor);
         System.out.println(valor);
         return "inicio";
     }
 
+
+    @RequestMapping(value = "principal",method = RequestMethod.GET)
+    public String salto(Model model){
+model.addAttribute("contenido","Principal");
+
+        return "principal/principal";
+    }
 
 }
