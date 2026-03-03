@@ -55,7 +55,6 @@
                             <li><a class="dropdown-item" th:href="@{/spring/ver-usuario-v2}">Data Binding 2</a></li>
                             <li><a class="dropdown-item" th:href="@{/spring/ver-usuario-v3}">Data Binding 3</a></li>
                             <li><a class="dropdown-item" th:href="@{/spring/ver-usuario-v4}">Data Binding 4</a></li>
-                            <li><a class="dropdown-item" th:href="@{/spring/ver-usuario-v5}">Data Binding 5</a></li>
 
                         </ul>
                     </li>
@@ -111,6 +110,16 @@
     <div class="alert alert-danger" th:if="${error !=null}" th:text=${error}></div>
     <div class="alert alert-warning" th:if="${warning !=null}" th:text=${warning}></div>
     <div class="alert alert-info" th:if="${info !=null}" th:text=${info}></div>
+
+    <div th:if="${alerts}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert"
+         id="alertMessage">
+        <span th:text="${alerts}"></span>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+    </div>
 </header>
 <footer th:fragment="footer">
     <div class="container text-center">
@@ -121,5 +130,25 @@
     <script th:src="@{/bootstrap/js/jquery-3.6.3.js}"></script>
 </footer>
 </body>
+
+<div th:fragment="paginaScripts">
+    <script>
+        <div th:fragment="paginaScripts">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            setTimeout(function () {
+                let alert = document.getElementById("alertMessage");
+                if (alert) {
+                    let bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 3000);
+
+        });
+    </script>
+
+
+</div>
 
 </html>

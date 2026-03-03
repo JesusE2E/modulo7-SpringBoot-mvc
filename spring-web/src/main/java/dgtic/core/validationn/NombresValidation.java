@@ -1,0 +1,27 @@
+package dgtic.core.validationn;
+
+
+import dgtic.core.controller.dto.UsuarioDTO;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+@Component
+public class NombresValidation implements Validator {
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return UsuarioDTO.class.equals(clazz);
+    }
+
+    @Override
+    public void validate(Object target, Errors errors) {
+UsuarioDTO usuarioDTO=( UsuarioDTO)target;
+if(!usuarioDTO.getNombre().equals("DGTIC")){
+    errors.rejectValue("nombre","Novalido.usuario.nombre");
+}
+    }
+
+    @Override
+    public Errors validateObject(Object target) {
+        return Validator.super.validateObject(target);
+    }
+}
