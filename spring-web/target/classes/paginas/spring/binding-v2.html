@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{plantillas/plantilla::head}">
+
+    <meta charset="UTF-8">
+    <title>Request Param</title>
+</head>
+<body>
+<header th:replace="~{plantillas/plantilla::header}"></header>
+<main class="container text-center shadow-lg p-3 mb-5 bg-body-tertiary rounded">
+    <h1 th:text="${contenido}"></h1>
+
+    <form method="post"  th:action="@{ver-usuario-v2}" th:object="${usuario}">
+        <div class="row justify-content-center">
+
+                <div class="col-5">
+                    <label for="nombre" class="form-label">Nombre:</label>
+            <input type="text" class="form-control" id="nombre"
+            name="nombre"
+                   th:field="*{nombre}"
+                   placeholder="jesus"
+            >
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-5">
+                        <label for="correo" class="form-label">Correo:</label>
+                        <input type="text" class="form-control" id="correo"
+                               name="correo"
+                               th:field="*{correo}"
+                               placeholder="correo@gmail.com"
+                        >
+                            </div>
+                </div>
+
+
+
+
+            <div class="row justify-content-center">
+                <div class="col-5">
+                    <label for="cp" class="form-label">Cp:</label>
+                    <input type="text" class="form-control" id="cp"
+                           name="cp"
+                           th:field="*{cp}"
+                           placeholder="xxxx"
+                    >
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-5">
+                    <label for="tel" class="form-label">Tel:</label>
+                    <input type="text" class="form-control" id="tel"
+                           name="tel"
+                           th:field="*{tel}"
+                           placeholder="00-0000-0000"
+                    >
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div class="col-8">
+                    <br>
+                    <button type="submit" class="btn btn-primary">submit</button>
+                </div>
+
+        </div>
+    </form>
+    <h1 th:text="${info}"></h1>
+
+</main>
+<footer th:replace="~{plantillas/plantilla::footer}"></footer>
+</body>
+</html>
