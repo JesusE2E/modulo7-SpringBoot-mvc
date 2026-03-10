@@ -167,7 +167,7 @@ public class UtilController {
 @GetMapping("mandar-correo")
     public String email(RedirectAttributes model){
  List<UsuarioBd> usuarioBds=usuarioService.todosUsuarios();
-    //ibqq atvz pscn fhuy
+    
     String gmail = "corereo@gmail.com";
     String pswd = "contraseña de gmail";
     Properties p = System.getProperties();
