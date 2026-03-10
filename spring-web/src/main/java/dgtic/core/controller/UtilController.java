@@ -1,0 +1,377 @@
+package dgtic.core.controller;
+
+import dgtic.core.model.dto.*;
+import dgtic.core.model.entity.UsuarioBd;
+import dgtic.core.service.CategoriaProductoServicio;
+import dgtic.core.service.PaisCiudadServicio;
+import dgtic.core.service.UsuarioService;
+import dgtic.core.util.Archivos;
+import jakarta.activation.DataHandler;
+import jakarta.activation.FileDataSource;
+
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.validation.Valid;
+
+import org.apache.coyote.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Controller
+@RequestMapping(value = "utilerias")
+public class UtilController {
+    @Autowired
+    private MessageSource mensaje;
+    @Autowired
+    private UsuarioService usuarioService;
+    @Autowired
+    private CategoriaProductoServicio categoriaProductoServicio;
+
+    @Autowired
+    private PaisCiudadServicio paisCiudadServicio;
+
+
+    @Value("${ejemplo.imagen.ruta}")
+    private String archivoRuta;
+
+
+    @GetMapping("error_particular_uno")
+    public String getError(Model model){
+        throw new NumberFormatException();
+    }
+    @ExceptionHandler(NumberFormatException.class)
+    public String errorRuntime(NumberFormatException e,
+                               Model model){
+        String msg=mensaje.getMessage("Error.conversion.string.integer",
+                null, Locale.getDefault());
+        model.addAttribute("explicacion",msg);
+        return "error-general";
+    }
+
+    @GetMapping("ver-usuario-v6")
+    public String verUsuarioV6(Model model){
+        model.addAttribute("usuario",new UsuarioDTO());
+        model.addAttribute("contenido","Ingresa los datos siguientes");
+        return "utilerias/binding-v6";
+    }
+
+    @PostMapping("recibir-usuario-v6")
+    public String recibirUsuario(@Valid @ModelAttribute("usuario") UsuarioBd usuario,
+                                 BindingResult bindingResult,
+                                 Model model){
+        if(bindingResult.hasErrors()){
+            for(ObjectError error:bindingResult.getAllErrors()){
+                System.out.println("Error: "+error.getDefaultMessage());
+            }
+            return "utilerias/binding-v6";
+        }
+        model.addAttribute("usuario",usuario);
+        String cadena="";
+        if(!usuario.getNombre().isEmpty() && !usuario.getCorreo().isEmpty()){
+            model.addAttribute("contenido","Los datos que ingresas son:");
+            cadena="Tu nombre es: "+usuario.getNombre()+" y correo: "+usuario.getCorreo()+" Edad:"+usuario.getEdad();
+        }
+     //   usuarioService.guardar(usuario);
+       // System.out.println(usuario);
+        try {
+            usuarioService.guardar(usuario);
+        }catch (Exception e){
+            String msg=mensaje.getMessage("Error.base.duplicado",
+                    null, LocaleContextHolder.getLocale());
+            bindingResult.rejectValue("correo","correo",msg);
+            return "utilerias/binding-v6";
+        }
+
+        model.addAttribute("alerts","se almacena con exito");
+
+        model.addAttribute("usuario" ,new UsuarioBd());
+        model.addAttribute("contenido","Los datos que ingresas son:");
+        model.addAttribute("info",cadena);
+        return "utilerias/binding-v6";
+    }
+
+
+    @GetMapping("redirecionar-sin-flash")
+    public String redireccionarSinFlash(Model model){
+    model.addAttribute("contenido","se hizo un redireccionamiento");
+
+    return "redirect:/principal";
+    }
+
+
+
+    @GetMapping("redirecionar-con-flash")
+    public String redireccionarConFlash(RedirectAttributes redirectAttributes){
+       redirectAttributes.addFlashAttribute("contenido","Se fizo redirecccionamiento");
+        return "redirect:/principal";
+    }
+
+
+    //end point para ver-subir-archivo
+    @GetMapping("ver-subir-archivo")
+    public String verArchivo(Model model){
+        model.addAttribute("contenido","Subir Archivo");
+        return "utilerias/subir-archivo";
+
+    }
+
+    @PostMapping("salvar-archivo")
+    public String recibirFlujo(@RequestParam("imagenArchivo")MultipartFile multipartFile, Model model){
+        String imagenNombre=null;
+        if(!multipartFile.isEmpty()){
+            imagenNombre= Archivos.almacenar(multipartFile,archivoRuta);
+            if(imagenNombre!=null){
+                System.out.println("nombre de archivo"+imagenNombre);
+            }
+        }
+        model.addAttribute("alerts","Archivo almacenado");
+        model.addAttribute("nombre",imagenNombre);
+        return "utilerias/subir-archivo";
+
+    }
+
+    //para el PDF
+    @GetMapping("crear-pdf")
+    public String generarPdf(Model model){
+        List<UsuarioBd> usuarios=usuarioService.todosUsuarios();
+        model.addAttribute("datos",usuarios);
+        model.addAttribute("ruta",archivoRuta);
+        return "utilerias/crear-pdf";
+    }
+
+@GetMapping("mandar-correo")
+    public String email(RedirectAttributes model){
+ List<UsuarioBd> usuarioBds=usuarioService.todosUsuarios();
+    //ibqq atvz pscn fhuy
+    String gmail = "corereo@gmail.com";
+    String pswd = "contraseña de gmail";
+    Properties p = System.getProperties();
+    p.setProperty("mail.smtps.host", "smpt.gmail.com");
+    p.setProperty("mail.smtps.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+    p.setProperty("mail.smtps.socketFactory.fallback", "false");
+    p.setProperty("mail.smtp.port", "465");
+    p.setProperty("mail.smtp.socketFactory.port", "465");
+    p.setProperty("mail.smtps.auth", "true");
+    p.setProperty("mail.smtp.ssl.trust", "smtp.gmail.com");
+    p.setProperty("mail.smtps.ssl.trust", "smtp.gmail.com");
+    p.setProperty("mail.smtp.ssl.quitwait", "false");
+    //construcción del html
+    String cadena = "<h2>Usuarios</br>";
+    for (UsuarioBd s : usuarioBds) {
+        cadena += "<h2>" +
+                s.getNombre() +
+                "</h2></br>";
+    }
+    try {
+        Session session = Session.getInstance(p, null);
+        MimeMessage message = new MimeMessage(session);
+
+        MimeBodyPart texto = new MimeBodyPart();
+        texto.setContent(cadena, "text/html;charset=utf-8");
+        //adjuntar la imagen
+        BodyPart adjunto = new MimeBodyPart();
+        String r = archivoRuta + "temp.pdf";
+        adjunto.setDataHandler(new DataHandler(new FileDataSource(r)));
+        adjunto.setFileName("temp.pdf");
+        Multipart multiple = new MimeMultipart();
+        multiple.addBodyPart(texto);
+        multiple.addBodyPart(adjunto);
+
+        message.setRecipients(Message.RecipientType.TO,
+                InternetAddress.parse("correo destino", false));
+        message.setSubject("Usuario Registrado en B.D");
+        message.setContent(multiple);
+        message.setSentDate(new Date());
+
+
+        Transport transport = (Transport) session.getTransport("smtps");
+        transport.connect("smtp.gmail.com", gmail, pswd);
+        transport.sendMessage(message, message.getAllRecipients());
+        transport.close();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return "redirect:/principal";
+    }
+
+    /// /esto debe estar en el servicio
+
+    //mostrar archivos
+    @GetMapping("mostrar-archivos")
+    public String mostrarArchivos(Model model) throws IOException {
+        Path archivoRutas= Paths.get(archivoRuta);
+        try (Stream<Path> ruta = Files.walk(archivoRutas, 1)) {
+            model.addAttribute("files",
+                    ruta.filter(path -> !path.equals(archivoRutas) && !path.toString().endsWith(".pdf"))
+                            .map(archivoRutas::relativize)
+                            .map(Path::toString)
+                            .collect(Collectors.toList()));        }
+        model.addAttribute("contenido","Bajar archivos");
+        return "utilerias/bajar-archivo";
+    }
+//descargar archivos pdf
+    @GetMapping("/bajar-archivos/{filename}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) throws MalformedURLException {
+        Path archivoRutas=Paths.get(archivoRuta);
+        Path filePath = archivoRutas.resolve(filename).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        if (resource.exists() && resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } else {
+            throw new RuntimeException("No se pudo leer el archivo: " + filename);
+        }
+    }
+
+    @GetMapping("ver-drop")
+    public String mostrarDatos(@RequestParam("version") int version,Model model){
+        model.addAttribute("contenido","Dropdown Anidado");
+        model.addAttribute("formulario", new FormularioDTO());
+        model.addAttribute("categorias",categoriaProductoServicio.getCategorias());
+        model.addAttribute("productos",List.of());
+
+return version==1?"utilerias/listas":"utilerias/listas_2";
+    }
+
+    @PostMapping("buscar_drop")
+    public String procesarFormulario(
+            @ModelAttribute("formulario") FormularioDTO formularioDTO,
+            Model model
+    ){
+        model.addAttribute("categorias",categoriaProductoServicio.getCategorias());
+        if(formularioDTO.getCategoriaId()!=null){
+            model.addAttribute("productos",
+                    categoriaProductoServicio.getProductosPorCategoria(formularioDTO.getCategoriaId()));
+        }else{
+            model.addAttribute("productos",List.of());
+        }
+
+        if(formularioDTO.getCategoriaId()==null){
+            model.addAttribute("warning","Selecciona una categoria");
+
+        } else if (formularioDTO.getProductoId()==null) {
+            model.addAttribute("warning","selecciona un producto");
+
+        }else {
+            model.addAttribute("info",formularioDTO.toString());
+        }
+        return "utilerias/listas";
+    }
+//para js
+    @GetMapping("/productos/{categoriaId}")
+    @ResponseBody
+    public List<ProductoDTO> obtenerProductos(@PathVariable Long categoriaId){
+        return categoriaProductoServicio.getProductosPorCategoria(categoriaId);
+    }
+
+    @PostMapping("/guardar_json")
+    @ResponseBody
+    public Map<String,Object> recuperar(@RequestBody FormularioDTO formularioDto,
+                                        Model model){
+        System.out.println("LO QUE SE GUARDO FUE"+formularioDto.toString());
+        Map<String,Object> response=new HashMap<>();
+        response.put("mensaje","Guardado Correctamente");
+
+        response.put("estado","OK");
+        return response;
+    }
+/***************************************************************************************
+ *
+ *                       PRACTICA DOS
+ *
+ ***************************************************************************************/
+
+
+    // USO DE THYMELEAF
+
+
+    @GetMapping("listasCiudadPaisTH")
+    public String mostrarPaisTH(Model model){
+        model.addAttribute("contenido","Obtener Ciudades Por Pais Usando  Thymeleaf");
+        model.addAttribute("formulario", new FormularioPaisDTO());
+        model.addAttribute("paises",paisCiudadServicio.getPaises());
+        model.addAttribute("ciudades",List.of());
+
+        return "utilerias/listasCiudadPaisTH";
+    }
+
+
+    @PostMapping("listasCiudadPaisTHPost")
+    public String enviarDatosDePaisCiudad( @ModelAttribute("formulario") FormularioPaisDTO formularioDTO
+            ,Model model){
+        model.addAttribute("paises",paisCiudadServicio.getPaises());
+        if(formularioDTO.getPaisId ()!=null){
+            model.addAttribute("ciudades",
+                    paisCiudadServicio.getCiudadesPorIdPais(formularioDTO.getPaisId()));
+                     }else{
+            model.addAttribute("ciudades",List.of());
+        }
+
+        if(formularioDTO.getPaisId()==null){
+            model.addAttribute("warning","Selecciona un Pais");
+
+        } else if (formularioDTO.getCiudadId()==null) {
+            model.addAttribute("warning","selecciona una Ciudad");
+
+        }else {
+            model.addAttribute("info",formularioDTO.toString());
+        }
+        return "utilerias/listasCiudadPaisTH";
+
+    }
+
+    // Uso de JS
+
+    @GetMapping("listasCiudadPaisJS")
+    public String mostrarPaisJS(Model model){
+        model.addAttribute("contenido","Obtener Ciudades Por Pais Usando JS");
+        model.addAttribute("formulario", new FormularioPaisDTO());
+        model.addAttribute("paises",paisCiudadServicio.getPaises());
+        model.addAttribute("ciudades",List.of());
+
+        return "utilerias/listasCiudadPaisJS";
+    }
+    @GetMapping("listasCiudadPaisJS/{idPais}")
+    @ResponseBody
+    public List<CiudadDTO> mostrarCiudadPorPais(@PathVariable Long idPais){
+        return paisCiudadServicio.getCiudadesPorIdPais(idPais);
+    }
+
+    @PostMapping("/guardar_Paises_Ciudad")
+    @ResponseBody
+    public ResponseEntity<FormularioPaisDTO> recuperar(@RequestBody FormularioPaisDTO formularioDto,
+                                        Model model){
+        System.out.println("LO QUE SE GUARDO FUE"+formularioDto.toString());
+
+        return ResponseEntity.status(201).body(formularioDto);
+
+
+    }
+}

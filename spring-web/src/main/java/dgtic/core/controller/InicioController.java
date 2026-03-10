@@ -34,7 +34,7 @@ public class InicioController {
 
     @RequestMapping(value = "principal",method = RequestMethod.GET)
     public String salto(Model model){
-model.addAttribute("contenido","Principal");
+//model.addAttribute("contenido","Principal");
 
         return "principal/principal";
     }

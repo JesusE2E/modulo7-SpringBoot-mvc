@@ -2,7 +2,7 @@ package dgtic.core.controller;
 
 import dgtic.core.controller.dto.EnteroConverter;
 import dgtic.core.controller.dto.MayusculasConverter;
-import dgtic.core.controller.dto.UsuarioDTO;
+import dgtic.core.model.dto.UsuarioDTO;
 import dgtic.core.controller.dto.VacioConverter;
 import dgtic.core.validationn.NombresValidation;
 import jakarta.validation.Valid;

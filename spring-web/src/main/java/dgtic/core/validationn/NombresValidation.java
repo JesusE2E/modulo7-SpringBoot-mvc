@@ -1,7 +1,7 @@
 package dgtic.core.validationn;
 
 
-import dgtic.core.controller.dto.UsuarioDTO;
+import dgtic.core.model.dto.UsuarioDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

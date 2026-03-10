@@ -1,16 +1,12 @@
-package dgtic.core.controller.dto;
+package dgtic.core.model.dto;
 
 import dgtic.core.validationn.NoEspacioNoVacio;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
-
-import java.io.Serializable;
 
 @Data
 @NoArgsConstructor

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{plantillas/plantilla::head}">
+
+    <meta charset="UTF-8">
+    <title>Request Param</title>
+</head>
+<body>
+<header th:replace="~{plantillas/plantilla::header}"></header>
+<main class="container text-center shadow-lg p-3 mb-5 bg-body-tertiary rounded">
+    <h1 th:text="${contenido}"></h1>
+
+    <ul>
+        <li th:each="file:${files}">
+            <a th:href="@{/utilerias/bajar-archivos/{filename}(filename=${file})}" th:text="${file}"></a>
+        </li>
+    </ul>
+
+
+
+    <div th:if="${nombre}">
+        <img th:src="@{'/imagenes/'+${nombre}}" width="20%" height="20%"><br/>
+    </div>
+
+
+
+</main>
+<footer th:replace="~{plantillas/plantilla::footer}"></footer>
+<div th:replace="~{plantillas/plantilla :: paginaScripts}"></div>
+</body>
+</html>

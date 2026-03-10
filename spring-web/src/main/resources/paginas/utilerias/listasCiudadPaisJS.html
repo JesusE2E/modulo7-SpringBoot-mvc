@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{plantillas/plantilla::head}">
+
+    <meta charset="UTF-8">
+    <title>Request Param</title>
+</head>
+<body>
+<header th:replace="~{plantillas/plantilla::header}"></header>
+<main class="container text-center shadow-lg p-3 mb-5 bg-body-tertiary rounded">
+    <h1 th:text="${contenido}"></h1>
+
+     <!-- -->
+
+        <select id="pais">
+            <option value="">SELECCIONE UN PAIS</option>
+            <option th:each="pa :${paises}"
+                    th:value="${pa.idPais}"
+                    th:text="${pa.nombre}">
+
+            </option>
+
+        </select>
+
+
+        <select id="ciudad">
+            <option value="">SELECCIONE UNA CIUDAD</option>
+
+
+        </select>
+        <button type="submit" onclick="guardarFormularioPais()">GUARDAR</button>
+
+
+
+
+</main>
+<footer th:replace="~{plantillas/plantilla::footer}"></footer>
+<div th:replace="~{plantillas/plantilla :: paginaScripts}"></div>
+<script th:src="@{/js/guardarFormularioPaises.js}"></script>
+<script th:src="@{/js/LlamarPaises.js}"></script>
+
+
+</body>
+</html>

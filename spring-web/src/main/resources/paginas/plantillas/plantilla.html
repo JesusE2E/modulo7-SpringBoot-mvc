@@ -91,12 +91,23 @@
                             <li><a class="dropdown-item" th:href="@{/utilerias/ver-drop?version=2}">Dropdown Anidado2</a></li>
 
 
+
                         </ul>
                     </li>
 
 
-                    <li class="nav-item">
-                        <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+                    <li class="nav-item dropdown ">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            @PracticaDos
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/utilerias/listasCiudadPaisTH}">Uso Spring MVC y Thymeleaf</a></li>
+                            <li><a class="dropdown-item" th:href="@{/utilerias/listasCiudadPaisJS}" target="_blank">Uso  javascript</a></li>
+
+
+
+
+                        </ul>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -132,8 +143,8 @@
 </body>
 
 <div th:fragment="paginaScripts">
-    <script>
-        <div th:fragment="paginaScripts">
+
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
